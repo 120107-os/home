@@ -26,19 +26,7 @@
             z-index: 10;
         }
 
-        /* Top Right: Cyclo[12]carbon icon */
-        #molviz-container {
-            position: absolute;
-            top: 2rem;
-            right: 2rem;
-            width: 100px;
-            height: 100px;
-            /* invisible square bounding box */
-            z-index: 10;
-            opacity: 0.8; /* Let the scene handle the 0.1 alpha for the molecule itself */
-        }
-
-        /* Left Justified, Top: Projects */
+        /* Title */
         #projects-section {
             position: absolute;
             top: 8rem;
@@ -109,8 +97,6 @@
 
     <div id="title">12.0107</div>
 
-    <div id="molviz-container"></div>
-
     <div id="projects-section">
         <div style="font-size: 0.8rem; letter-spacing: 0.2em; opacity: 0.3; text-transform: uppercase; margin-bottom: 1rem;">Subjects</div>
         
@@ -127,61 +113,6 @@
         import * as THREE from 'three';
         import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-
-        // ==========================================
-        // Top Right: Cyclo[12]carbon
-        // ==========================================
-        const molvizContainer = document.getElementById('molviz-container');
-        const molvizScene = new THREE.Scene();
-        
-        const molvizCamera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
-        molvizCamera.position.z = 10;
-
-        const molvizRenderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-        molvizRenderer.setSize(100, 100);
-        molvizContainer.appendChild(molvizRenderer.domElement);
-
-        const molvizGroup = new THREE.Group();
-        molvizScene.add(molvizGroup);
-
-        // User requested: color: black, alpha 0.1, wobble 0.1, spinning slowly
-        const atomGeometry = new THREE.SphereGeometry(0.4, 16, 16);
-        const atomMaterial = new THREE.MeshBasicMaterial({ 
-            color: 0x000000, 
-            transparent: true, 
-            opacity: 0.1,
-            wireframe: true
-        });
-
-        const radius = 2.5;
-        for (let i = 0; i < 12; i++) {
-            const angle = (i / 12) * Math.PI * 2;
-            const atom = new THREE.Mesh(atomGeometry, atomMaterial);
-            atom.position.x = Math.cos(angle) * radius;
-            atom.position.y = Math.sin(angle) * radius;
-            molvizGroup.add(atom);
-            
-            // Connect lines
-            if (i > 0) {
-                const prevAngle = ((i - 1) / 12) * Math.PI * 2;
-                const points = [];
-                points.push(new THREE.Vector3(Math.cos(prevAngle) * radius, Math.sin(prevAngle) * radius, 0));
-                points.push(new THREE.Vector3(atom.position.x, atom.position.y, 0));
-                const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
-                const lineMaterial = new THREE.LineBasicMaterial({ color: 0x555555, transparent: true, opacity: 0.2 });
-                const line = new THREE.Line(lineGeometry, lineMaterial);
-                molvizGroup.add(line);
-            }
-        }
-        // Connect last to first
-        const points = [];
-        points.push(new THREE.Vector3(atomGeometry.parameters.radius, 0, 0)); // wrong, use positions
-        points.push(new THREE.Vector3(Math.cos((11/12)*Math.PI*2)*radius, Math.sin((11/12)*Math.PI*2)*radius, 0));
-        points[0].set(Math.cos(0)*radius, Math.sin(0)*radius, 0);
-        const lineGeom = new THREE.BufferGeometry().setFromPoints(points);
-        const lineMat = new THREE.LineBasicMaterial({ color: 0x555555, transparent: true, opacity: 0.2 });
-        molvizGroup.add(new THREE.Line(lineGeom, lineMat));
-
 
         // ==========================================
         // Center: Project 1 (embodiment) Icon
@@ -237,11 +168,20 @@
                 console.error('Hand mesh mesh_0000_left_0 not found!');
             }
             
-            // Center the entire model based on visible objects only?
-            // Actually, we just center the whole scene as before.
-            const box = new THREE.Box3().setFromObject(handModel);
-            const center = box.getCenter(new THREE.Vector3());
-            handModel.position.sub(center);
+            // Center the entire model based ONLY on the visible hand mesh
+            // so that it ignores the invisible meshes when computing the bounding box.
+            let visibleMesh = null;
+            handModel.traverse((child) => {
+                if (child.isMesh && child.visible) {
+                    visibleMesh = child;
+                }
+            });
+            
+            if (visibleMesh) {
+                const box = new THREE.Box3().setFromObject(visibleMesh);
+                const center = box.getCenter(new THREE.Vector3());
+                handModel.position.sub(center);
+            }
             
             // Scale it down to fit in the icon
             handModel.scale.set(0.8, 0.8, 0.8);
@@ -258,16 +198,6 @@
         function animate() {
             requestAnimationFrame(animate);
             const time = clock.getElapsedTime();
-
-            // Animate molviz
-            // spinning slowly
-            molvizGroup.rotation.z += 0.005;
-            molvizGroup.rotation.y += 0.002;
-            
-            // wobble 0.1
-            molvizGroup.rotation.x = Math.sin(time) * 0.1;
-
-            molvizRenderer.render(molvizScene, molvizCamera);
 
             // Animate embodiment hand icon
             if (handModel) {
