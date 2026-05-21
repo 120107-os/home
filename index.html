@@ -10,9 +10,9 @@
         body {
             margin: 0;
             overflow: hidden;
-            background-color: #000;
+            background-color: #fff;
             font-family: 'Noto Sans', sans-serif;
-            color: #fff;
+            color: #000;
         }
 
         /* Top Left: Title */
@@ -57,7 +57,7 @@
             flex-direction: row;
             align-items: center;
             text-decoration: none;
-            color: #fff;
+            color: #000;
             transition: opacity 0.3s ease;
             width: 100%;
             justify-content: space-between;
@@ -72,7 +72,7 @@
             width: 100px;
             height: 100px;
             border-radius: 50%;
-            background: radial-gradient(circle, rgba(20,20,20,1) 0%, rgba(0,0,0,0) 70%);
+            background: radial-gradient(circle, rgba(235,235,235,1) 0%, rgba(255,255,255,0) 70%);
             position: relative;
             margin-right: 1.5rem;
         }
@@ -90,7 +90,7 @@
             opacity: 0.6;
             letter-spacing: 0.05em;
             text-align: right;
-            max-width: 400px;
+            white-space: nowrap;
         }
 
     </style>
@@ -112,7 +112,7 @@
     <div id="molviz-container"></div>
 
     <div id="projects-section">
-        <div style="font-size: 0.8rem; letter-spacing: 0.2em; opacity: 0.3; text-transform: uppercase; margin-bottom: 1rem;">Projects</div>
+        <div style="font-size: 0.8rem; letter-spacing: 0.2em; opacity: 0.3; text-transform: uppercase; margin-bottom: 1rem;">Subjects</div>
         
         <a href="https://embody.120107.cloud" class="project">
             <div style="display: flex; align-items: center;">
@@ -144,17 +144,12 @@
         const molvizGroup = new THREE.Group();
         molvizScene.add(molvizGroup);
 
-        // Cyclo[12]carbon is a ring of 12 carbon atoms
         // User requested: color: black, alpha 0.1, wobble 0.1, spinning slowly
-        // To make black visible on black bg, we use a basic material with 0.1 opacity 
-        // Wait, if it's black and 0.1 alpha, it'll be invisible. We'll add a white stroke/wireframe
-        // or a slightly emissive color so it barely registers.
-        // I will use a very dark gray with a white wireframe or emissive to keep it barely visible.
         const atomGeometry = new THREE.SphereGeometry(0.4, 16, 16);
         const atomMaterial = new THREE.MeshBasicMaterial({ 
-            color: 0x333333, 
+            color: 0x000000, 
             transparent: true, 
-            opacity: 0.3,
+            opacity: 0.1,
             wireframe: true
         });
 
@@ -226,9 +221,9 @@
                     if (child.name.includes('mesh_0000_left_0')) {
                         child.visible = true;
                         found = true;
-                        // Assign white material
+                        // Assign dark material to contrast with white background
                         child.material = new THREE.MeshStandardMaterial({
-                            color: 0xffffff,
+                            color: 0x222222,
                             metalness: 0.2,
                             roughness: 0.3
                         });
