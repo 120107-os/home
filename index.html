@@ -90,12 +90,12 @@
         .poetry-text {
             display: inline-block;
             white-space: nowrap;
-            animation: scroll-pingpong linear infinite alternate;
+            animation: scroll-infinite linear infinite;
         }
         
-        @keyframes scroll-pingpong {
-            0%, 15% { transform: translateX(0); }
-            85%, 100% { transform: translateX(var(--overflow)); }
+        @keyframes scroll-infinite {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
         }
 
         @media (max-width: 768px) {
@@ -147,27 +147,26 @@
             const isMobile = window.innerWidth <= 768;
             
             document.querySelectorAll('.poetry-line').forEach(line => {
-                // Reset if already wrapped
-                if (line.querySelector('.poetry-text')) {
-                    line.innerHTML = line.querySelector('.poetry-text').innerText;
-                    line.classList.remove('marquee-container');
+                // Store original text if not present
+                if (!line.hasAttribute('data-original-text')) {
+                    line.setAttribute('data-original-text', line.innerText);
                 }
+                const text = line.getAttribute('data-original-text');
+                
+                // Reset first
+                line.innerHTML = text;
+                line.classList.remove('marquee-container');
                 
                 // On mobile, check if the native text overflows its container
                 if (isMobile && line.scrollWidth > line.clientWidth) {
-                    const overflow = line.scrollWidth - line.clientWidth;
-                    const text = line.innerText;
-                    
-                    // Wrap text in a span that we can animate
-                    line.innerHTML = `<span class="poetry-text">${text}</span>`;
+                    // Duplicate text for infinite scroll
+                    const spacer = '\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0';
+                    line.innerHTML = `<span class="poetry-text">${text}${spacer}${text}${spacer}</span>`;
                     line.classList.add('marquee-container');
                     
                     const span = line.querySelector('.poetry-text');
-                    // Set custom property for the transform destination
-                    span.style.setProperty('--overflow', `-${overflow}px`);
-                    
-                    // Calculate speed (e.g. roughly 30px per second)
-                    const duration = Math.max(4, overflow / 30); 
+                    const scrollDistance = span.scrollWidth / 2;
+                    const duration = Math.max(4, scrollDistance / 30); 
                     span.style.animationDuration = `${duration}s`;
                 }
             });
