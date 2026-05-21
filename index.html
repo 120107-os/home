@@ -38,27 +38,29 @@
             opacity: 0.8; /* Let the scene handle the 0.1 alpha for the molecule itself */
         }
 
-        /* Left Justified: Projects */
+        /* Left Justified, Top: Projects */
         #projects-section {
             position: absolute;
-            top: 50%;
+            top: 8rem;
             left: 2rem;
-            transform: translateY(-50%);
+            right: 2rem;
             display: flex;
             flex-direction: column;
-            align-items: flex-start;
+            align-items: stretch;
             gap: 2rem;
             z-index: 10;
+            max-width: 1200px;
         }
 
         .project {
             display: flex;
             flex-direction: row;
             align-items: center;
-            gap: 1.5rem;
             text-decoration: none;
             color: #fff;
             transition: opacity 0.3s ease;
+            width: 100%;
+            justify-content: space-between;
         }
 
         .project:hover {
@@ -67,25 +69,28 @@
 
         /* Small 3D interactive icon */
         .project-icon {
-            width: 150px;
-            height: 150px;
+            width: 100px;
+            height: 100px;
             border-radius: 50%;
             background: radial-gradient(circle, rgba(20,20,20,1) 0%, rgba(0,0,0,0) 70%);
             position: relative;
+            margin-right: 1.5rem;
         }
 
         .project-title {
-            font-size: 1rem;
-            font-weight: 400;
+            font-size: 1.2rem;
+            font-weight: 300;
             letter-spacing: 0.1em;
-            text-transform: lowercase;
+            text-transform: uppercase;
         }
 
         .poetry-line {
-            font-size: 0.8rem;
+            font-size: 0.9rem;
             font-style: italic;
-            opacity: 0.5;
+            opacity: 0.6;
             letter-spacing: 0.05em;
+            text-align: right;
+            max-width: 400px;
         }
 
     </style>
@@ -110,8 +115,10 @@
         <div style="font-size: 0.8rem; letter-spacing: 0.2em; opacity: 0.3; text-transform: uppercase; margin-bottom: 1rem;">Projects</div>
         
         <a href="https://embody.120107.cloud" class="project">
-            <div id="embodiment-icon" class="project-icon"></div>
-            <div class="project-title">embodiment</div>
+            <div style="display: flex; align-items: center;">
+                <div id="embodiment-icon" class="project-icon"></div>
+                <div class="project-title">embodiment</div>
+            </div>
             <div class="poetry-line">pale hands in the dark, flesh becomes geometry, shape of the soul wakes</div>
         </a>
     </div>
@@ -191,7 +198,7 @@
         embCamera.position.set(0, 0, 150);
 
         const embRenderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-        embRenderer.setSize(150, 150);
+        embRenderer.setSize(100, 100);
         embContainer.appendChild(embRenderer.domElement);
 
         const embControls = new OrbitControls(embCamera, embRenderer.domElement);
