@@ -43,19 +43,15 @@
             align-items: center;
             text-decoration: none;
             color: #000;
-            border-bottom: 1px solid #eaeaea;
             padding-bottom: 1rem;
             width: 100%;
             box-sizing: border-box;
+            gap: 2rem;
+            justify-content: flex-start;
         }
 
-        /* 3D floating icon logo */
-        .project-icon {
-            width: 80px;
-            height: 80px;
-            position: relative;
-            margin-right: 2rem;
-            flex-shrink: 0;
+        .project:hover {
+            opacity: 0.5;
         }
 
         .project-title {
@@ -63,11 +59,7 @@
             font-weight: 500;
             letter-spacing: 0.1em;
             text-transform: uppercase;
-            flex: 1;
             white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            margin-right: 1rem;
         }
 
         .poetry-line {
@@ -75,7 +67,7 @@
             font-style: italic;
             color: #666;
             letter-spacing: 0.05em;
-            text-align: right;
+            text-align: left;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -89,17 +81,15 @@
             #title {
                 margin-bottom: 3rem;
             }
-            .project-icon {
-                width: 60px;
-                height: 60px;
-                margin-right: 1rem;
+            .project {
+                gap: 1rem;
             }
             .project-title {
                 font-size: 0.9rem;
             }
             .poetry-line {
                 font-size: 0.8rem;
-                max-width: 120px; /* Forces ellipsis earlier on small screens */
+                max-width: 200px;
             }
         }
 
@@ -123,116 +113,10 @@
         <div style="font-size: 0.8rem; letter-spacing: 0.2em; opacity: 0.3; text-transform: uppercase; margin-bottom: 1rem;">Subjects</div>
         
         <a href="https://embody.120107.cloud" class="project">
-            <div style="display: flex; align-items: center;">
-                <div id="embodiment-icon" class="project-icon"></div>
-                <div class="project-title">embodiment</div>
-            </div>
+            <div class="project-title">embodiment</div>
             <div class="poetry-line">pale hands in the dark, flesh becomes geometry, shape of the soul wakes</div>
         </a>
     </div>
 
-    <script type="module">
-        import * as THREE from 'three';
-        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-
-        // ==========================================
-        // Center: Project 1 (embodiment) Icon
-        // ==========================================
-        const embContainer = document.getElementById('embodiment-icon');
-        const embScene = new THREE.Scene();
-        
-        const embCamera = new THREE.PerspectiveCamera(45, 1, 0.1, 1000);
-        embCamera.position.set(0, 0, 150);
-
-        const embRenderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-        embRenderer.setSize(80, 80);
-        embContainer.appendChild(embRenderer.domElement);
-
-        const embControls = new OrbitControls(embCamera, embRenderer.domElement);
-        embControls.enableZoom = false;
-        embControls.enablePan = false;
-        embControls.enableDamping = true;
-        embControls.dampingFactor = 0.05;
-
-        // Lighting for the hand
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
-        embScene.add(ambientLight);
-        const dirLight = new THREE.DirectionalLight(0xffffff, 2.0);
-        dirLight.position.set(50, 50, 50);
-        embScene.add(dirLight);
-
-        let handModel = null;
-        const loader = new GLTFLoader();
-        loader.load('v1/scene.glb', (gltf) => {
-            handModel = gltf.scene;
-            
-            let visibleMesh = null;
-            // Hide all meshes except the one we want
-            handModel.traverse((child) => {
-                if (child.isMesh) {
-                    if (child.name.includes('mesh_0000_left_0')) {
-                        child.visible = true;
-                        visibleMesh = child;
-                        // Assign dark material to contrast with white background
-                        child.material = new THREE.MeshStandardMaterial({
-                            color: 0x222222,
-                            metalness: 0.2,
-                            roughness: 0.3
-                        });
-                    } else {
-                        child.visible = false;
-                    }
-                }
-            });
-            
-            if (!visibleMesh) {
-                console.error('Hand mesh mesh_0000_left_0 not found!');
-            } else {
-                // Determine scale to fit within camera view
-                const box = new THREE.Box3().setFromObject(visibleMesh);
-                const size = box.getSize(new THREE.Vector3());
-                const maxDim = Math.max(size.x, size.y, size.z);
-                
-                // If maxDim is 0, the mesh has no volume, which is an error.
-                if (maxDim > 0) {
-                    const targetSize = 80; // Fit well inside camera z=150
-                    const scaleFactor = targetSize / maxDim;
-                    handModel.scale.set(scaleFactor, scaleFactor, scaleFactor);
-                    
-                    // Recompute box after scaling to center it perfectly
-                    const box2 = new THREE.Box3().setFromObject(visibleMesh);
-                    const center = box2.getCenter(new THREE.Vector3());
-                    handModel.position.sub(center);
-                }
-            }
-
-            embScene.add(handModel);
-        });
-
-
-        // ==========================================
-        // Animation Loop
-        // ==========================================
-        const clock = new THREE.Clock();
-
-        function animate() {
-            requestAnimationFrame(animate);
-            const time = clock.getElapsedTime();
-
-            // Animate embodiment hand icon
-            if (handModel) {
-                // Gentle floating/rotating effect
-                handModel.rotation.y = Math.sin(time * 0.5) * 0.2;
-                handModel.position.y = Math.sin(time) * 2;
-            }
-            embControls.update();
-            embRenderer.render(embScene, embCamera);
-        }
-
-        animate();
-
-        // Handle possible resizing if needed (though containers are fixed size here)
-    </script>
 </body>
 </html>
