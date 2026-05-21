@@ -217,28 +217,49 @@
         let handModel = null;
         const loader = new GLTFLoader();
         loader.load('v1/scene.glb', (gltf) => {
-            handModel = gltf.scene;
+            let leftHand = null;
             
-            // Center the model
-            const box = new THREE.Box3().setFromObject(handModel);
-            const center = box.getCenter(new THREE.Vector3());
-            handModel.position.sub(center);
-            
-            // Scale it down to fit in the icon
-            handModel.scale.set(0.8, 0.8, 0.8);
-
-            // Assign white material
-            handModel.traverse((child) => {
-                if (child.isMesh) {
-                    child.material = new THREE.MeshStandardMaterial({
-                        color: 0xffffff,
-                        metalness: 0.2,
-                        roughness: 0.3
-                    });
+            // Search for the specific mesh
+            gltf.scene.traverse((child) => {
+                if (child.isMesh && child.name === 'mesh_0000_left_0') {
+                    leftHand = child;
                 }
             });
+            
+            // Fallback if exact name not found
+            if (!leftHand) {
+                gltf.scene.traverse((child) => {
+                    if (child.isMesh && child.name.includes('left_0')) leftHand = child;
+                });
+            }
+            
+            if (leftHand) {
+                // Extract just the specific hand
+                const mesh = leftHand.clone();
+                mesh.position.set(0, 0, 0); // reset local position
+                
+                // Assign white material
+                mesh.material = new THREE.MeshStandardMaterial({
+                    color: 0xffffff,
+                    metalness: 0.2,
+                    roughness: 0.3
+                });
 
-            embScene.add(handModel);
+                handModel = new THREE.Group();
+                handModel.add(mesh);
+                
+                // Center the specific hand
+                const box = new THREE.Box3().setFromObject(handModel);
+                const center = box.getCenter(new THREE.Vector3());
+                mesh.position.sub(center);
+                
+                // Scale it down to fit in the icon
+                handModel.scale.set(0.8, 0.8, 0.8);
+                
+                embScene.add(handModel);
+            } else {
+                console.error('Hand mesh not found!');
+            }
         });
 
 
