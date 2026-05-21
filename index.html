@@ -20,13 +20,14 @@
             position: absolute;
             top: 2rem;
             left: 2rem;
-            font-size: 1.5rem;
-            font-weight: 300;
+            font-size: 1.2rem;
+            font-weight: 400;
             letter-spacing: 0.1em;
+            text-transform: uppercase;
             z-index: 10;
         }
 
-        /* Title */
+        /* Clean Menu Layout: Subjects */
         #projects-section {
             position: absolute;
             top: 8rem;
@@ -34,10 +35,9 @@
             right: 2rem;
             display: flex;
             flex-direction: column;
-            align-items: stretch;
-            gap: 2rem;
+            gap: 1.5rem;
             z-index: 10;
-            max-width: 1200px;
+            max-width: 1000px;
         }
 
         .project {
@@ -46,36 +46,35 @@
             align-items: center;
             text-decoration: none;
             color: #000;
+            border-bottom: 1px solid #eaeaea;
+            padding-bottom: 1rem;
             transition: opacity 0.3s ease;
-            width: 100%;
-            justify-content: space-between;
         }
 
         .project:hover {
             opacity: 0.8;
         }
 
-        /* Small 3D interactive icon */
+        /* 3D floating icon logo */
         .project-icon {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(235,235,235,1) 0%, rgba(255,255,255,0) 70%);
+            width: 80px;
+            height: 80px;
             position: relative;
-            margin-right: 1.5rem;
+            margin-right: 2rem;
         }
 
         .project-title {
-            font-size: 1.2rem;
-            font-weight: 300;
+            font-size: 1rem;
+            font-weight: 500;
             letter-spacing: 0.1em;
             text-transform: uppercase;
+            flex: 1;
         }
 
         .poetry-line {
             font-size: 0.9rem;
             font-style: italic;
-            opacity: 0.6;
+            color: #666;
             letter-spacing: 0.05em;
             text-align: right;
             white-space: nowrap;
@@ -124,7 +123,7 @@
         embCamera.position.set(0, 0, 150);
 
         const embRenderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-        embRenderer.setSize(100, 100);
+        embRenderer.setSize(80, 80);
         embContainer.appendChild(embRenderer.domElement);
 
         const embControls = new OrbitControls(embCamera, embRenderer.domElement);
