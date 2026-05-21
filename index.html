@@ -83,21 +83,6 @@
             min-width: 0; 
         }
 
-        .marquee-container {
-            text-overflow: clip !important;
-        }
-        
-        .poetry-text {
-            display: inline-block;
-            white-space: nowrap;
-            animation: scroll-infinite linear infinite;
-        }
-        
-        @keyframes scroll-infinite {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
-        }
-
         @media (max-width: 768px) {
             body {
                 padding: 1.5rem;
@@ -106,14 +91,17 @@
                 margin-bottom: 3rem;
             }
             .project {
-                gap: 1rem;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.2rem;
             }
             .project-title {
                 font-size: 0.9rem;
             }
             .poetry-line {
                 font-size: 0.8rem;
-                max-width: 200px;
+                white-space: normal;
+                line-height: 1.4;
             }
         }
 
@@ -142,38 +130,6 @@
         </a>
     </div>
 
-    <script>
-        function initMarquee() {
-            const isMobile = window.innerWidth <= 768;
-            
-            document.querySelectorAll('.poetry-line').forEach(line => {
-                // Store original text if not present
-                if (!line.hasAttribute('data-original-text')) {
-                    line.setAttribute('data-original-text', line.innerText);
-                }
-                const text = line.getAttribute('data-original-text');
-                
-                // Reset first
-                line.innerHTML = text;
-                line.classList.remove('marquee-container');
-                
-                // On mobile, check if the native text overflows its container
-                if (isMobile && line.scrollWidth > line.clientWidth) {
-                    // Duplicate text for infinite scroll
-                    const spacer = '\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0';
-                    line.innerHTML = `<span class="poetry-text">${text}${spacer}${text}${spacer}</span>`;
-                    line.classList.add('marquee-container');
-                    
-                    const span = line.querySelector('.poetry-text');
-                    const scrollDistance = span.scrollWidth / 2;
-                    const duration = Math.max(4, scrollDistance / 30); 
-                    span.style.animationDuration = `${duration}s`;
-                }
-            });
-        }
 
-        window.addEventListener('load', initMarquee);
-        window.addEventListener('resize', initMarquee);
-    </script>
 </body>
 </html>
