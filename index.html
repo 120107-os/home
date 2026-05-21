@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>120107</title>
+    <!-- Using Google Fonts for Noto Sans -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@300;400&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #000;
+            font-family: 'Noto Sans', sans-serif;
+            color: #fff;
+        }
+
+        /* Top Left: Title */
+        #title {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            font-size: 1.5rem;
+            font-weight: 300;
+            letter-spacing: 0.1em;
+            z-index: 10;
+        }
+
+        /* Top Right: Cyclo[12]carbon icon */
+        #molviz-container {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            width: 100px;
+            height: 100px;
+            /* invisible square bounding box */
+            z-index: 10;
+            opacity: 0.8; /* Let the scene handle the 0.1 alpha for the molecule itself */
+        }
+
+        /* Center: Projects */
+        #projects-section {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+            z-index: 10;
+        }
+
+        .project {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            text-decoration: none;
+            color: #fff;
+            transition: opacity 0.3s ease;
+        }
+
+        .project:hover {
+            opacity: 0.8;
+        }
+
+        /* Small 3D interactive icon */
+        .project-icon {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(20,20,20,1) 0%, rgba(0,0,0,0) 70%);
+            position: relative;
+        }
+
+        .project-title {
+            font-size: 1rem;
+            font-weight: 400;
+            letter-spacing: 0.1em;
+            text-transform: lowercase;
+        }
+
+        .poetry-line {
+            font-size: 0.8rem;
+            font-style: italic;
+            opacity: 0.5;
+            letter-spacing: 0.05em;
+        }
+
+    </style>
+    <!-- Import Three.js -->
+    <script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+</head>
+<body>
+
+    <div id="title">12.0107</div>
+
+    <div id="molviz-container"></div>
+
+    <div id="projects-section">
+        <div style="font-size: 0.8rem; letter-spacing: 0.2em; opacity: 0.3; text-transform: uppercase; margin-bottom: 1rem;">Projects</div>
+        
+        <a href="https://embody.120107.cloud" class="project">
+            <div id="embodiment-icon" class="project-icon"></div>
+            <div class="project-title">embodiment</div>
+            <div class="poetry-line">shape of the soul wakes</div>
+        </a>
+    </div>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        // ==========================================
+        // Top Right: Cyclo[12]carbon
+        // ==========================================
+        const molvizContainer = document.getElementById('molviz-container');
+        const molvizScene = new THREE.Scene();
+        
+        const molvizCamera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+        molvizCamera.position.z = 10;
+
+        const molvizRenderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        molvizRenderer.setSize(100, 100);
+        molvizContainer.appendChild(molvizRenderer.domElement);
+
+        const molvizGroup = new THREE.Group();
+        molvizScene.add(molvizGroup);
+
+        // Cyclo[12]carbon is a ring of 12 carbon atoms
+        // User requested: color: black, alpha 0.1, wobble 0.1, spinning slowly
+        // To make black visible on black bg, we use a basic material with 0.1 opacity 
+        // Wait, if it's black and 0.1 alpha, it'll be invisible. We'll add a white stroke/wireframe
+        // or a slightly emissive color so it barely registers.
+        // I will use a very dark gray with a white wireframe or emissive to keep it barely visible.
+        const atomGeometry = new THREE.SphereGeometry(0.4, 16, 16);
+        const atomMaterial = new THREE.MeshBasicMaterial({ 
+            color: 0x333333, 
+            transparent: true, 
+            opacity: 0.3,
+            wireframe: true
+        });
+
+        const radius = 2.5;
+        for (let i = 0; i < 12; i++) {
+            const angle = (i / 12) * Math.PI * 2;
+            const atom = new THREE.Mesh(atomGeometry, atomMaterial);
+            atom.position.x = Math.cos(angle) * radius;
+            atom.position.y = Math.sin(angle) * radius;
+            molvizGroup.add(atom);
+            
+            // Connect lines
+            if (i > 0) {
+                const prevAngle = ((i - 1) / 12) * Math.PI * 2;
+                const points = [];
+                points.push(new THREE.Vector3(Math.cos(prevAngle) * radius, Math.sin(prevAngle) * radius, 0));
+                points.push(new THREE.Vector3(atom.position.x, atom.position.y, 0));
+                const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
+                const lineMaterial = new THREE.LineBasicMaterial({ color: 0x555555, transparent: true, opacity: 0.2 });
+                const line = new THREE.Line(lineGeometry, lineMaterial);
+                molvizGroup.add(line);
+            }
+        }
+        // Connect last to first
+        const points = [];
+        points.push(new THREE.Vector3(atomGeometry.parameters.radius, 0, 0)); // wrong, use positions
+        points.push(new THREE.Vector3(Math.cos((11/12)*Math.PI*2)*radius, Math.sin((11/12)*Math.PI*2)*radius, 0));
+        points[0].set(Math.cos(0)*radius, Math.sin(0)*radius, 0);
+        const lineGeom = new THREE.BufferGeometry().setFromPoints(points);
+        const lineMat = new THREE.LineBasicMaterial({ color: 0x555555, transparent: true, opacity: 0.2 });
+        molvizGroup.add(new THREE.Line(lineGeom, lineMat));
+
+
+        // ==========================================
+        // Center: Project 1 (embodiment) Icon
+        // ==========================================
+        const embContainer = document.getElementById('embodiment-icon');
+        const embScene = new THREE.Scene();
+        
+        const embCamera = new THREE.PerspectiveCamera(45, 1, 0.1, 1000);
+        embCamera.position.set(0, 0, 150);
+
+        const embRenderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        embRenderer.setSize(150, 150);
+        embContainer.appendChild(embRenderer.domElement);
+
+        const embControls = new OrbitControls(embCamera, embRenderer.domElement);
+        embControls.enableZoom = false;
+        embControls.enablePan = false;
+        embControls.enableDamping = true;
+        embControls.dampingFactor = 0.05;
+
+        // Lighting for the hand
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+        embScene.add(ambientLight);
+        const dirLight = new THREE.DirectionalLight(0xffffff, 2.0);
+        dirLight.position.set(50, 50, 50);
+        embScene.add(dirLight);
+
+        let handModel = null;
+        const loader = new GLTFLoader();
+        loader.load('v1/scene.glb', (gltf) => {
+            handModel = gltf.scene;
+            
+            // Center the model
+            const box = new THREE.Box3().setFromObject(handModel);
+            const center = box.getCenter(new THREE.Vector3());
+            handModel.position.sub(center);
+            
+            // Scale it down to fit in the icon
+            handModel.scale.set(0.8, 0.8, 0.8);
+
+            // Assign white material
+            handModel.traverse((child) => {
+                if (child.isMesh) {
+                    child.material = new THREE.MeshStandardMaterial({
+                        color: 0xffffff,
+                        metalness: 0.2,
+                        roughness: 0.3
+                    });
+                }
+            });
+
+            embScene.add(handModel);
+        });
+
+
+        // ==========================================
+        // Animation Loop
+        // ==========================================
+        const clock = new THREE.Clock();
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const time = clock.getElapsedTime();
+
+            // Animate molviz
+            // spinning slowly
+            molvizGroup.rotation.z += 0.005;
+            molvizGroup.rotation.y += 0.002;
+            
+            // wobble 0.1
+            molvizGroup.rotation.x = Math.sin(time) * 0.1;
+
+            molvizRenderer.render(molvizScene, molvizCamera);
+
+            // Animate embodiment hand icon
+            if (handModel) {
+                // Gentle floating/rotating effect
+                handModel.rotation.y = Math.sin(time * 0.5) * 0.2;
+                handModel.position.y = Math.sin(time) * 2;
+            }
+            embControls.update();
+            embRenderer.render(embScene, embCamera);
+        }
+
+        animate();
+
+        // Handle possible resizing if needed (though containers are fixed size here)
+    </script>
+</body>
+</html>
