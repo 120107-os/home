@@ -79,6 +79,23 @@
             overflow: hidden;
             text-overflow: ellipsis;
             flex-shrink: 1;
+            /* Flex layout requires this to prevent overflow breaking flex */
+            min-width: 0; 
+        }
+
+        .marquee-container {
+            text-overflow: clip !important;
+        }
+        
+        .poetry-text {
+            display: inline-block;
+            white-space: nowrap;
+            animation: scroll-pingpong linear infinite alternate;
+        }
+        
+        @keyframes scroll-pingpong {
+            0%, 15% { transform: translateX(0); }
+            85%, 100% { transform: translateX(var(--overflow)); }
         }
 
         @media (max-width: 768px) {
@@ -125,5 +142,39 @@
         </a>
     </div>
 
+    <script>
+        function initMarquee() {
+            const isMobile = window.innerWidth <= 768;
+            
+            document.querySelectorAll('.poetry-line').forEach(line => {
+                // Reset if already wrapped
+                if (line.querySelector('.poetry-text')) {
+                    line.innerHTML = line.querySelector('.poetry-text').innerText;
+                    line.classList.remove('marquee-container');
+                }
+                
+                // On mobile, check if the native text overflows its container
+                if (isMobile && line.scrollWidth > line.clientWidth) {
+                    const overflow = line.scrollWidth - line.clientWidth;
+                    const text = line.innerText;
+                    
+                    // Wrap text in a span that we can animate
+                    line.innerHTML = `<span class="poetry-text">${text}</span>`;
+                    line.classList.add('marquee-container');
+                    
+                    const span = line.querySelector('.poetry-text');
+                    // Set custom property for the transform destination
+                    span.style.setProperty('--overflow', `-${overflow}px`);
+                    
+                    // Calculate speed (e.g. roughly 30px per second)
+                    const duration = Math.max(4, overflow / 30); 
+                    span.style.animationDuration = `${duration}s`;
+                }
+            });
+        }
+
+        window.addEventListener('load', initMarquee);
+        window.addEventListener('resize', initMarquee);
+    </script>
 </body>
 </html>
