@@ -167,13 +167,13 @@
         loader.load('v1/scene.glb', (gltf) => {
             handModel = gltf.scene;
             
-            let found = false;
+            let visibleMesh = null;
             // Hide all meshes except the one we want
             handModel.traverse((child) => {
                 if (child.isMesh) {
                     if (child.name.includes('mesh_0000_left_0')) {
                         child.visible = true;
-                        found = true;
+                        visibleMesh = child;
                         // Assign dark material to contrast with white background
                         child.material = new THREE.MeshStandardMaterial({
                             color: 0x222222,
@@ -186,27 +186,26 @@
                 }
             });
             
-            if (!found) {
+            if (!visibleMesh) {
                 console.error('Hand mesh mesh_0000_left_0 not found!');
-            }
-            
-            // Center the entire model based ONLY on the visible hand mesh
-            // so that it ignores the invisible meshes when computing the bounding box.
-            let visibleMesh = null;
-            handModel.traverse((child) => {
-                if (child.isMesh && child.visible) {
-                    visibleMesh = child;
-                }
-            });
-            
-            if (visibleMesh) {
+            } else {
+                // Determine scale to fit within camera view
                 const box = new THREE.Box3().setFromObject(visibleMesh);
-                const center = box.getCenter(new THREE.Vector3());
-                handModel.position.sub(center);
+                const size = box.getSize(new THREE.Vector3());
+                const maxDim = Math.max(size.x, size.y, size.z);
+                
+                // If maxDim is 0, the mesh has no volume, which is an error.
+                if (maxDim > 0) {
+                    const targetSize = 80; // Fit well inside camera z=150
+                    const scaleFactor = targetSize / maxDim;
+                    handModel.scale.set(scaleFactor, scaleFactor, scaleFactor);
+                    
+                    // Recompute box after scaling to center it perfectly
+                    const box2 = new THREE.Box3().setFromObject(visibleMesh);
+                    const center = box2.getCenter(new THREE.Vector3());
+                    handModel.position.sub(center);
+                }
             }
-            
-            // Scale it down to fit in the icon
-            handModel.scale.set(0.8, 0.8, 0.8);
 
             embScene.add(handModel);
         });
